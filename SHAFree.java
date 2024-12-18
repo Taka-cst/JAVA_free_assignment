@@ -1,15 +1,23 @@
+/**************************************************/
+/*セキュリティラボではサークルメンバーを募集しています。/
+/**************************************************/
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.security.*;
 
-public class SHAFree extends JFrame {
+public class SHAFree extends JFrame implements ActionListener{
     JLabel label1,label2,label3;
     ButtonGroup group;
     JTextField field,checksum;
     JRadioButton mozi,file;
     JButton generate,copy;//生成ボタンとコピーボタン
     JTextArea result;//生成結果や比較結果の表示
+    JComboBox comboBox;
+
+    String[] FromText = {"MD5", "ROT13", "SHA-256","To Base64", "From Base64"};
+    String[] FromFile = {"MD", "SHA-256", "To Base64", "From Base64"};
     public static void main(String[] args){
         SHAFree w = new SHAFree();
         w.setTitle("SHAジェネレータ");
@@ -34,7 +42,7 @@ public class SHAFree extends JFrame {
         result = new JTextArea(10, 40);
         result.setLineWrap(true);
         result.setWrapStyleWord(true);
-        generate = new JButton("生成");
+        generate = new JButton("生成/比較");
         copy = new JButton(String.format("結果\nコピー"));
         setumei = new JLabel("SHAジェネレータ");
         add(setumei,BorderLayout.NORTH);
@@ -45,18 +53,32 @@ public class SHAFree extends JFrame {
         panel1_1.add(file);
         panel1.add(panel1_1);
 
-        JComboBox<String> comboBox = new JComboBox<>(new String[]{"SHA-1", "SHA-256", "SHA-512"});
+        comboBox = new JComboBox(FromText);
         panel1.add(comboBox);
         panel1.add(label2);
         panel1.add(field);
         panel1.add(label3);
         panel1.add(checksum);
         add(panel1, BorderLayout.NORTH);
-        add(new JScrollPane(result), BorderLayout.CENTER);
+        result=new JTextArea(10,40);
+        add(result, BorderLayout.CENTER);
         JPanel panel2 = new JPanel();
         panel2.add(generate);
         panel2.add(copy);
         add(panel2, BorderLayout.SOUTH);
 
+        //アクションパフォームド追加
+        mozi.addActionListener(this);
+        file.addActionListener(this);
+        generate.addActionListener(this);
+        copy.addActionListener(this);
+    }
+
+    public void actionPerformed(ActionEvent ae){
+        if(ae.getSourse()==generate){
+            comboBox=new JComboBox(FromText);
+        }else if(ae.getSourse()==copy){
+            comboBox=new JComboBox(FromFile);
+        }
     }
 }

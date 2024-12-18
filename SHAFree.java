@@ -6,6 +6,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.security.*;
+import javax.swing.JOptionPane;
+
+
+//クリップボードにコピーする
+import java.awt.datatransfer.*;
 
 public class SHAFree extends JFrame implements ActionListener{
     JLabel label1,label2,label3;
@@ -15,6 +20,7 @@ public class SHAFree extends JFrame implements ActionListener{
     JButton generate,copy;//生成ボタンとコピーボタン
     JTextArea result;//生成結果や比較結果の表示
     JComboBox comboBox;
+
 
     String[] FromText = {"MD5", "ROT13", "SHA-256","To Base64", "From Base64"};
     String[] FromFile = {"MD", "SHA-256", "To Base64", "From Base64"};
@@ -29,7 +35,7 @@ public class SHAFree extends JFrame implements ActionListener{
         setLayout(new BorderLayout()); // BorderLayoutを設定
         //ラベル類
         JLabel setumei;
-        mozi=new JRadioButton("文字から生成");
+        mozi=new JRadioButton("文字から生成",true);
         file=new JRadioButton("ファイルから生成");
         group=new ButtonGroup();
         group.add(mozi);
@@ -40,8 +46,7 @@ public class SHAFree extends JFrame implements ActionListener{
         field = new JTextField(30);
         checksum = new JTextField(30);
         result = new JTextArea(10, 40);
-        result.setLineWrap(true);
-        result.setWrapStyleWord(true);
+        result.setEditable(false);
         generate = new JButton("生成/比較");
         copy = new JButton(String.format("結果\nコピー"));
         setumei = new JLabel("SHAジェネレータ");
@@ -60,7 +65,6 @@ public class SHAFree extends JFrame implements ActionListener{
         panel1.add(label3);
         panel1.add(checksum);
         add(panel1, BorderLayout.NORTH);
-        result=new JTextArea(10,40);
         add(result, BorderLayout.CENTER);
         JPanel panel2 = new JPanel();
         panel2.add(generate);
@@ -87,11 +91,55 @@ public class SHAFree extends JFrame implements ActionListener{
     }
 
     public void gen(){
+        String text=field.getText();
+        if(text.equals("")){
+            JOptionPane.showMessageDialog(null, "テキストを入力してください");
+        }else if(!(mozi.isSelected()||file.isSelected())){
+            JOptionPane.showMessageDialog(null, "生成の種類を選択してください");
+        }
+        //変換タイプの取得
+        String type=(String)comboBox.getSelectedItem();
+        //System.out.println(comboBox.getSelectedItem());
+        if(mozi.isSelected()){//文字から生成する場合
+            switch(type){
+                case "MD5":
+                    result.setText(text);
+                    break;
+                case "ROT13":
+                    result.setText(ROT13(text));
+                    break;
+            }
 
+        }
     }
 
-    public void cop(){
-        
+    public void cop(){//クリップボードへのコピーに関する情報は[https://allabout.co.jp/gm/gc/80702/]から引用・参考
+        StringSelection selection = new StringSelection(result.getText());
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
+    }
+
+    public String ROT13(String stt){
+        //ROT13の処理
+        String res="";
+        boolean notEnglish=false;
+        for(int i=0;i<stt.length();i++){
+            char c = stt.charAt(i);
+            if(('a'<=c&&c<='m')||('A'<=c&&c<='M')){
+                c+=13;
+            }
+            else if(('n'<=c&&c<='z')||('N'<=c&&c<='Z')){
+                c-=13;
+            }else{
+                notEnglish=true;
+                c=c;
+            }
+            res+=c;
+        }
+        if(notEnglish){
+            JOptionPane.showMessageDialog(null, "英語以外の文字が含まれているため該当文字はそのまま出力します");
+        }
+        return res;
     }
 
 

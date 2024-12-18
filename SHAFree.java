@@ -75,10 +75,24 @@ public class SHAFree extends JFrame implements ActionListener{
     }
 
     public void actionPerformed(ActionEvent ae){
-        if(ae.getSourse()==generate){
-            comboBox=new JComboBox(FromText);
-        }else if(ae.getSourse()==copy){
-            comboBox=new JComboBox(FromFile);
+        if(ae.getSource()==mozi){
+            comboBox.setModel(new DefaultComboBoxModel(FromText));//参考[1]
+        }else if(ae.getSource()==file){
+            comboBox.setModel(new DefaultComboBoxModel(FromFile));
+        }else if(ae.getSource()==generate){
+            gen();
+        }else if(ae.getSource()==copy){
+            cop();
         }
     }
+
+    public void gen(){
+
+    }
+
+    public void cop(){
+        
+    }
+
+
 }

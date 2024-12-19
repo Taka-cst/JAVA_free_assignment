@@ -1,30 +1,51 @@
-/**************************************************/
-/*セキュリティラボではサークルメンバーを募集しています。/
-/**************************************************/
+//JAVA自由課題
+//内容:ハッシュ値などの生成
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.security.*;
+
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JTextArea;
 import javax.swing.JOptionPane;
 
-import java.util.Base64;
+//ラジオボタン用
+import javax.swing.ButtonGroup;
+import javax.swing.JRadioButton;
 
-//クリップボードにコピーする
-import java.awt.datatransfer.*;
+//ドロップダウン用
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 
-import java.math.BigInteger;
+//コピペ用
+import java.awt.datatransfer.StringSelection;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+
+//ファイル入出力用
 import java.io.File;
 import java.io.FileInputStream;
 
+//Base64エンコード用
+import java.util.Base64;
+import java.math.BigInteger;
+
+//メッセージダイジェスト用
+import java.security.MessageDigest;
+
 public class SHAFree extends JFrame implements ActionListener{
-    JLabel label1,label2,label3;
-    ButtonGroup group;
-    JTextField field,checksum;
-    JRadioButton mozi,file;
+    JLabel label1,label2,label3;//それぞれのラベル
+    ButtonGroup group; //ラジオボタンの重複を防ぐためのグループ
+    JTextField field,checksum;//field=>文字列やファイルパス, checksum=>チェックサムがあれば入力
+    JRadioButton mozi,file;//mozi=>文字から生成,file=>ファイルから生成
     JButton generate,copy;//生成ボタンとコピーボタン
     JTextArea result;//生成結果や比較結果の表示
-    JComboBox comboBox;
+    JComboBox comboBox;//ドロップダウンリスト
 
 
     String[] FromText = {"MD5", "ROT13", "SHA-256","To Base64", "From Base64"};
@@ -38,8 +59,6 @@ public class SHAFree extends JFrame implements ActionListener{
 
     public SHAFree(){
         setLayout(new BorderLayout()); // BorderLayoutを設定
-        //ラベル類
-        JLabel setumei;
         mozi=new JRadioButton("文字から生成",true);
         file=new JRadioButton("ファイルから生成");
         group=new ButtonGroup();
@@ -54,10 +73,8 @@ public class SHAFree extends JFrame implements ActionListener{
         result.setEditable(false);
         generate= new JButton("生成/比較");
         copy= new JButton(String.format("結果\nコピー"));
-        setumei= new JLabel("SHAジェネレータ");
-        add(setumei,BorderLayout.NORTH);
         //配置
-        JPanel panel1=new JPanel(new GridLayout(3, 2));
+        JPanel panel1=new JPanel(new GridLayout(3, 2));//ボタン以外の部分
         JPanel panel1_1=new JPanel(new GridLayout(1, 2));
         panel1_1.add(mozi);
         panel1_1.add(file);
@@ -73,13 +90,13 @@ public class SHAFree extends JFrame implements ActionListener{
         JPanel resultPanel = new JPanel();
         resultPanel.setLayout(new BorderLayout());
         JLabel resultLabel = new JLabel("<html><br>生成結果<html>");
-        resultLabel.setHorizontalAlignment(JLabel.CENTER);
+        resultLabel.setHorizontalAlignment(JLabel.CENTER);//ラベルの中央ぞろえ
         resultPanel.add(resultLabel, BorderLayout.NORTH);
         resultPanel.add(result, BorderLayout.CENTER);
         add(resultPanel, BorderLayout.CENTER);
 
         // add(result, BorderLayout.CENTER);
-        JPanel panel2 = new JPanel();
+        JPanel panel2 = new JPanel();//生成ボタンとコピーボタン
         panel2.add(generate);
         panel2.add(copy);
         add(panel2, BorderLayout.SOUTH);
@@ -91,18 +108,19 @@ public class SHAFree extends JFrame implements ActionListener{
         copy.addActionListener(this);
     }
 
-    public void actionPerformed(ActionEvent ae){
-        if(ae.getSource()==mozi){
+    public void actionPerformed(ActionEvent ae){//
+        if(ae.getSource()==mozi){//ラジオボタンによってドロップダウンリストの中身を変更
             comboBox.setModel(new DefaultComboBoxModel(FromText));//参考[1]
-        }else if(ae.getSource()==file){
+        }else if(ae.getSource()==file){//同じ
             comboBox.setModel(new DefaultComboBoxModel(FromFile));
-        }else if(ae.getSource()==generate){
+        }else if(ae.getSource()==generate){//ボタンが押されたら
             gen();
         }else if(ae.getSource()==copy){
             cop();
         }
     }
 
+    //生成ボタンが押されたときの処理
     public void gen(){
         String text=field.getText();
         if(text.equals("")){
@@ -136,7 +154,7 @@ public class SHAFree extends JFrame implements ActionListener{
                         byte[] sha256Byte=sha256.digest(text.getBytes());
                         result.setText(String.format("%064x",new BigInteger(1, sha256Byte)));//64桁に合わせる
                     }catch(Exception e){
-                        JOptionPane.showMessageDialog(null, "エラーが発生しました");
+                        JOptionPane.showMessageDialog(null, "エラーです");
                     }
                     break;
                 
@@ -145,7 +163,11 @@ public class SHAFree extends JFrame implements ActionListener{
                     break;
                 
                 case "From Base64":
-                    result.setText(new String(Base64.getDecoder().decode(text.getBytes())));
+                    try{
+                        result.setText(new String(Base64.getDecoder().decode(text.getBytes())));
+                    }catch(Exception e){
+                        JOptionPane.showMessageDialog(null, "エラーです");
+                    }
                     break;
             }
         }else if(file.isSelected()){//ファイルから生成
@@ -183,12 +205,14 @@ public class SHAFree extends JFrame implements ActionListener{
         }
     }
 
+    //Copyボタンが押されたときの処理
     public void cop(){//クリップボードへのコピーに関する情報は[https://allabout.co.jp/gm/gc/80702/]から引用・参考
         StringSelection selection = new StringSelection(result.getText());
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
     }
 
+    //ROT13の処理
     public String ROT13(String stt){
         //ROT13の処理
         String res="";
@@ -211,6 +235,4 @@ public class SHAFree extends JFrame implements ActionListener{
         }
         return res;
     }
-
-
 }
